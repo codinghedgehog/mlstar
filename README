@@ -1,0 +1,71 @@
+Multi Loci Sequence Typing Analysis helpeR
+
+This script matches and returns an ST type number for a given base reference sequence, MLST fragment files (all fasta
+formatted), and ST type table file.
+
+Usage: mlstar.pl -c <config file> [-quiet] [-debug] [-l <program log>] [-fast]
+
+-c <config file = REQUIRED parameter with the name and path of the config file to use for this run. See below for details.
+-quiet = Optional flag to reduce amount of output to standard out.  See the log file for full output.
+-debug = Optional flag to generate additional debugging message (verbose).  Also stored in log file.
+-l <program log> = Optional parameter to specify the log file to write to during the program run.
+-fast = Tells mlstar to stop looking after finding the first matching allele of each gene fragment, and st type table.
+
+By default, mlstar will look for matches in all alleles of all gene fragments and all entries in the st type table,
+throwing an error if duplicates are found.  Use -fast if you are sure you have no such duplicates in your data.
+
+The <config file> is a plain text file containing information in the following format (similar to a sectioned INI file):
+
+------------------------------------------
+# Comments and blank lines are ignored
+
+[ST ALLELE TABLE FILES]
+st_allele_table.txt
+
+[ALLELE FILES]
+arcc_alleles.fasta
+aroe_alleles.fasta
+
+[REF FILES]
+NC007793_corrected.fsa
+
+-------------------------------------------
+
+In short, the config file has three sections, and the start of each section is indicated by a [SECTION] tag:
+[ST ALLELE TABLE FILES]
+[ALLELE FILES]
+[REF FILES]
+
+The non-blank, non-comment lines (beginning with #) after each section tag should be file names (and paths)
+related to the given section.
+
+Files in the [ST ALLEL TABLE FILES] section should contain the path and filenames to the ST allele table, with the
+expected content format of:
+<ST_type> <arcc_allele_#> <aroe_allele_#> <glpf_allele_#> <gmk_allele_#> <pta_allele_#> <tpi_allele_#> <yqil_allele_#>
+(basically a table of numbers)
+
+Files in the [ALLELE FILES] section should contain FASTA formatted files with the allele sequences for the housekeeping genes.
+
+IMPORTANT NOTE: The top down order of the files in this section should match up against the left-to-right columnar order in the
+ST allele table file.  So if you have files listed as:
+
+arcc_alleles.fasta
+aroe_alleles.fasta
+gmk_allel.fasta
+
+in the allele files section, then the table file columns should be in the order:
+
+ST_Type   arc_allele_#   aroe_allele_#   gmk_allel_# ...
+
+Files in the [REF FILES] section contains the base reference sequence files of the isolate that you want to determine
+the ST type of.
+
+Milstar will process each base reference file in the [REF FILES] section, matching against the files listed in the [ALLELE FILES]
+section, and looking up the final ST type in the table files listed in the [ST ALLELE TABLE FILES] section.  If there is more
+than one file in the [ST ALLELE TABLE FILES] section, mlstar will use them in top-down order, stopping when it finds the first
+successful ST type lookup.
+
+ST analysis output is logged to REF_FILE.mlstar.out (i.e. one for each reference file).  Program output is logged to
+mlstar.log (or can be specified with the -l <logfile> parameter).
+
+
